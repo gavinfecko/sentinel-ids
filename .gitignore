@@ -5,3 +5,4 @@ logs/*.jsonl
 logs/*.pcap
 logs/*.json
 .DS_Store
+.pytest_cache/
