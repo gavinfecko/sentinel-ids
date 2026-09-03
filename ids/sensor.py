@@ -46,6 +46,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("-t", "--timeout", type=int, default=0,
                    help="stop after N seconds")
     p.add_argument("--log", default="logs/alerts.jsonl", help="JSONL alert log path")
+    p.add_argument("--config", help="YAML config file (thresholds, toggles)")
     p.add_argument("--rules", default="rules/signatures.yaml", help="signature file")
     p.add_argument("--min-severity", default="low",
                    choices=["info", "low", "medium", "high", "critical"],
@@ -63,10 +64,15 @@ def main(argv: list[str] | None = None) -> int:
     if not args.quiet:
         print(BANNER)
 
+    cfg = {}
+    if args.config:
+        import yaml as _yaml
+        cfg = _yaml.safe_load(Path(args.config).read_text()) or {}
+    rules_path = cfg.get('rules', args.rules)
     bus = AlertBus()
     bus.add_sink(ConsoleSink(min_severity=args.min_severity))
     bus.add_sink(JsonlSink(args.log))
-    engine = Engine(bus, rules_path=args.rules)
+    engine = Engine(bus, config=cfg, rules_path=rules_path)
 
     source = args.interface or args.read
     print(f"  source      : {source}")

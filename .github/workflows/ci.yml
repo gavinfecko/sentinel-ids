@@ -1,0 +1,27 @@
+name: CI
+on:
+  push: {branches: [main]}
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "${{ matrix.python }}"}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Validate signature rules
+        run: python -c "import yaml,re; [re.compile(r['regex']) for r in yaml.safe_load(open('rules/signatures.yaml'))['signatures']]; print('rules OK')"
+      - name: Run tests
+        run: pytest -q
+      - name: Detection self-check (attack sim replay)
+        run: |
+          python scripts/gen_attack_pcap.py -o /tmp/sim.pcap
+          python -m ids.sensor -r /tmp/sim.pcap --quiet --summary-json /tmp/sum.json
+          python -c "import json; s=json.load(open('/tmp/sum.json')); assert s['alerts']>=18, s['alerts']; print('detection self-check OK:', s['alerts'], 'alerts')"

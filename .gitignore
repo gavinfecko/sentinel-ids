@@ -6,3 +6,7 @@ logs/*.pcap
 logs/*.json
 .DS_Store
 .pytest_cache/
+logs/*.svg
+logs/*.html
+*.egg-info/
+build/

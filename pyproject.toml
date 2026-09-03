@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sentinel-ids"
+version = "1.0.0"
+description = "A signature + heuristic network intrusion detection system with a Kali attack lab"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Gavin Fecko"}]
+keywords = ["ids", "intrusion-detection", "network-security", "scapy", "mitre-attack"]
+dependencies = ["scapy>=2.6", "pyyaml>=6.0", "rich>=13.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+sentinel-ids = "ids.sensor:main"
+sentinel-dash = "ids.dashboard:main"
+sentinel-report = "ids.report:main"
+
+[tool.setuptools]
+packages = ["ids"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

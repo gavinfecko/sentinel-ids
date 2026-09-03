@@ -1,0 +1,40 @@
+# sentinel-ids configuration. Every detector can be tuned or disabled here.
+# Pass with:  --config config/sentinel.yaml
+
+# Networks you consider "home" — used for context in reports (informational).
+home_net:
+  - 192.168.0.0/24
+
+detectors:
+  port_scan:
+    enabled: true
+    threshold: 15      # distinct destination ports...
+    window: 10.0       # ...seen within this many seconds -> alert
+
+  stealth_scan:
+    enabled: true      # NULL/FIN/XMAS/Maimon flag combinations
+
+  host_sweep:
+    enabled: true
+    threshold: 10      # distinct hosts probed...
+    window: 15.0       # ...within this window
+
+  syn_flood:
+    enabled: true
+    threshold: 200     # SYNs to one service...
+    window: 5.0        # ...within this window -> DoS
+
+  arp_spoof:
+    enabled: true      # IP-to-MAC binding changes
+
+  brute_force:
+    enabled: true
+    threshold: 25      # connection attempts to an auth port...
+    window: 30.0       # ...within this window
+
+  icmp_anomaly:
+    enabled: true
+    max_payload: 128   # ICMP data larger than this is suspicious
+
+# Payload signature ruleset (regex rules).
+rules: rules/signatures.yaml

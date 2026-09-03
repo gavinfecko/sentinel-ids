@@ -46,7 +46,7 @@ class Engine:
             (IcmpAnomalyDetector, "icmp_anomaly", {"max_payload": 128}),
         ]
         for cls, key, defaults in specs:
-            opts = {**defaults, **cfg.get(key, {})}
+            opts = {**defaults, **cfg.get("detectors", {}).get(key, {})}
             if opts.pop("enabled", True):
                 self.detectors.append(cls(**opts))
 

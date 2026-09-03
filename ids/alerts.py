@@ -33,6 +33,7 @@ class Alert:
     dst_port: Optional[int] = None
     proto: Optional[str] = None
     detail: str = ""
+    mitre: Optional[str] = None   # MITRE ATT&CK technique id
     evidence: dict[str, Any] = field(default_factory=dict)
     ts: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 

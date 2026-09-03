@@ -48,6 +48,7 @@ class Detector:
     severity: str = "low"
     category: str = "misc"
     cooldown: float = 20.0
+    mitre: str = ""
 
     def __init__(self, **opts: Any) -> None:
         self.opts = opts
@@ -67,7 +68,7 @@ class Detector:
             sid=self.sid, name=self.name, severity=self.severity,
             category=self.category, src_ip=rec.src_ip, dst_ip=rec.dst_ip,
             src_port=rec.src_port, dst_port=rec.dst_port, proto=rec.proto,
-            detail=detail, evidence=evidence,
+            detail=detail, evidence=evidence, mitre=self.mitre,
         )
 
     def inspect(self, rec: PacketRecord) -> Iterable[Alert]:
@@ -82,6 +83,7 @@ class PortScanDetector(Detector):
 
     sid, name = 1000001, "TCP Port Scan"
     severity, category = "high", "recon"
+    mitre = "T1046"
 
     def __init__(self, threshold: int = 15, window: float = 10.0, **opts: Any) -> None:
         super().__init__(**opts)
@@ -115,6 +117,7 @@ class StealthScanDetector(Detector):
 
     sid, name = 1000002, "Stealth Scan (anomalous TCP flags)"
     severity, category = "high", "recon"
+    mitre = "T1046"
     cooldown = 10.0
 
     VARIANTS = {
@@ -148,6 +151,7 @@ class HostSweepDetector(Detector):
 
     sid, name = 1000003, "Network Host Sweep"
     severity, category = "medium", "recon"
+    mitre = "T1018"
     cooldown = 30.0
 
     def __init__(self, threshold: int = 10, window: float = 15.0, **opts: Any) -> None:
@@ -183,6 +187,7 @@ class SynFloodDetector(Detector):
 
     sid, name = 1000004, "SYN Flood / TCP DoS"
     severity, category = "critical", "dos"
+    mitre = "T1499.002"
     cooldown = 15.0
 
     def __init__(self, threshold: int = 200, window: float = 5.0, **opts: Any) -> None:
@@ -218,6 +223,7 @@ class ArpSpoofDetector(Detector):
 
     sid, name = 1000005, "ARP Spoofing / MITM"
     severity, category = "critical", "spoofing"
+    mitre = "T1557.002"
     cooldown = 30.0
 
     def __init__(self, **opts: Any) -> None:
@@ -251,6 +257,7 @@ class BruteForceDetector(Detector):
 
     sid, name = 1000006, "Credential Brute Force"
     severity, category = "high", "exploit"
+    mitre = "T1110"
     cooldown = 30.0
 
     AUTH_PORTS = {21: "FTP", 22: "SSH", 23: "Telnet", 25: "SMTP", 110: "POP3",
@@ -287,6 +294,7 @@ class IcmpAnomalyDetector(Detector):
 
     sid, name = 1000007, "ICMP Anomaly (tunnel / oversized)"
     severity, category = "medium", "policy"
+    mitre = "T1048.003"
     cooldown = 20.0
 
     def __init__(self, max_payload: int = 128, **opts: Any) -> None:
@@ -332,6 +340,7 @@ class SignatureDetector(Detector):
                     "ports": set(r.get("ports", [])) or None,
                     "regex": re.compile(r["regex"].encode(), re.IGNORECASE),
                     "desc": r.get("desc", ""),
+                    "mitre": r.get("mitre", "T1190"),
                 })
             except (KeyError, re.error) as exc:
                 print(f"[rule load error] {r.get('name', '?')}: {exc}")
@@ -359,6 +368,7 @@ class SignatureDetector(Detector):
                 src_port=rec.src_port, dst_port=rec.dst_port, proto=rec.proto,
                 detail=f"{rule['desc']} | matched: {snippet!r}",
                 evidence={"matched": snippet, "rule_sid": rule["sid"]},
+                mitre=rule["mitre"],
             ))
         return out
 

@@ -1,140 +1,172 @@
-# sentinel-ids payload signatures.
-# Each rule matches a regex against TCP/UDP/ICMP payload bytes.
-# sid ranges: 2000xxx web attacks, 2001xxx tooling, 2002xxx shells/malware
 signatures:
-  # ---------- web application attacks ----------
-  - sid: 2000001
-    name: "SQL Injection Attempt"
-    severity: critical
-    category: exploit
-    proto: TCP
-    ports: [80, 443, 8080, 8000, 3000, 5000]
-    regex: "(?:union\\s+(?:all\\s+)?select|'\\s*or\\s*'?1'?\\s*=\\s*'?1|;\\s*drop\\s+table|sleep\\(\\d+\\)|benchmark\\(|waitfor\\s+delay|information_schema)"
-    desc: "SQL injection pattern in HTTP request"
-
-  - sid: 2000002
-    name: "Cross-Site Scripting (XSS)"
-    severity: high
-    category: exploit
-    proto: TCP
-    ports: [80, 443, 8080, 8000, 3000, 5000]
-    regex: "(?:<script[^>]*>|javascript:|onerror\\s*=|onload\\s*=|<img[^>]+onerror|document\\.cookie)"
-    desc: "Cross-site scripting payload in HTTP traffic"
-
-  - sid: 2000003
-    name: "Directory Traversal"
-    severity: high
-    category: exploit
-    proto: TCP
-    ports: [80, 443, 8080, 8000, 3000, 5000, 21]
-    regex: "(?:\\.\\./\\.\\./|\\.\\.\\\\\\.\\.\\\\|%2e%2e[/%]|/etc/passwd|/etc/shadow|boot\\.ini|win\\.ini)"
-    desc: "Path traversal attempting to escape the web root"
-
-  - sid: 2000004
-    name: "Command Injection"
-    severity: critical
-    category: exploit
-    proto: TCP
-    ports: [80, 443, 8080, 8000, 3000, 5000]
-    regex: "(?:;\\s*(?:cat|ls|id|whoami|uname|wget|curl|nc|bash|sh)\\s|\\|\\s*(?:nc|bash|sh)\\s|\\$\\(\\s*(?:id|whoami)\\s*\\)|`\\s*(?:id|whoami)\\s*`)"
-    desc: "Shell command injection in HTTP parameters"
-
-  - sid: 2000005
-    name: "Log4Shell / JNDI Injection"
-    severity: critical
-    category: exploit
-    proto: TCP
-    regex: "\\$\\{jndi:(?:ldap|ldaps|rmi|dns|iiop|corba|nis)://"
-    desc: "CVE-2021-44228 JNDI lookup string"
-
-  - sid: 2000006
-    name: "Shellshock Exploit"
-    severity: critical
-    category: exploit
-    proto: TCP
-    regex: "\\(\\s*\\)\\s*\\{\\s*:\\s*;\\s*\\}\\s*;"
-    desc: "CVE-2014-6271 bash environment-variable exploit"
-
-  - sid: 2000007
-    name: "Local/Remote File Inclusion"
-    severity: high
-    category: exploit
-    proto: TCP
-    ports: [80, 443, 8080, 8000, 3000, 5000]
-    regex: "(?:php://(?:input|filter)|data://text|expect://|file:///|=https?://[^&\\s]+\\.(?:txt|php)\\?)"
-    desc: "File inclusion wrapper in HTTP request"
-
-  # ---------- attack tooling fingerprints ----------
-  - sid: 2001001
-    name: "Nikto Web Scanner"
-    severity: high
-    category: recon
-    proto: TCP
-    regex: "(?:User-Agent:[^\\r\\n]*Nikto|Nikto/\\d)"
-    desc: "Nikto vulnerability scanner user-agent"
-
-  - sid: 2001002
-    name: "sqlmap Scanner"
-    severity: high
-    category: recon
-    proto: TCP
-    regex: "(?:User-Agent:[^\\r\\n]*sqlmap|sqlmap/\\d)"
-    desc: "sqlmap automated SQL injection tool"
-
-  - sid: 2001003
-    name: "Directory Brute Forcer"
-    severity: medium
-    category: recon
-    proto: TCP
-    regex: "User-Agent:[^\\r\\n]*(?:gobuster|dirbuster|dirb|feroxbuster|ffuf|wfuzz)"
-    desc: "Content discovery tool user-agent"
-
-  - sid: 2001004
-    name: "Nmap NSE Probe"
-    severity: medium
-    category: recon
-    proto: TCP
-    regex: "(?:Nmap Scripting Engine|User-Agent:[^\\r\\n]*Nmap|nmap\\.org/book/nse)"
-    desc: "Nmap scripting engine service probe"
-
-  - sid: 2001005
-    name: "Hydra Brute-Force Tool"
-    severity: high
-    category: exploit
-    proto: TCP
-    regex: "(?:User-Agent:[^\\r\\n]*Hydra|Mozilla/4\\.0 \\(Hydra\\))"
-    desc: "THC-Hydra credential brute-forcing tool"
-
-  - sid: 2001006
-    name: "Metasploit Default Payload"
-    severity: critical
-    category: exploit
-    proto: TCP
-    regex: "(?:meterpreter|metasploit|msfconsole|X-Powered-By:[^\\r\\n]*Metasploit)"
-    desc: "Metasploit framework artefact in traffic"
-
-  # ---------- shells and post-exploitation ----------
-  - sid: 2002001
-    name: "Reverse Shell Command"
-    severity: critical
-    category: exploit
-    proto: TCP
-    regex: "(?:bash\\s+-i\\s*>&\\s*/dev/tcp/|nc\\s+-[a-z]*e\\s*/bin/(?:ba)?sh|python[0-9.]*\\s+-c\\s+['\\\"]?import\\s+socket|sh\\s+-i\\s*>&)"
-    desc: "Reverse shell one-liner observed in payload"
-
-  - sid: 2002002
-    name: "Cleartext Credentials"
-    severity: medium
-    category: policy
-    proto: TCP
-    ports: [21, 23, 80, 110, 143, 8080]
-    regex: "(?:^|\\r\\n)(?:USER\\s+\\S+|PASS\\s+\\S+|Authorization:\\s*Basic\\s+[A-Za-z0-9+/=]+)"
-    desc: "Credentials transmitted without encryption"
-
-  - sid: 2002003
-    name: "EICAR Test Signature"
-    severity: high
-    category: exploit
-    proto: TCP
-    regex: "X5O!P%@AP\\[4\\\\PZX54\\(P\\^\\)7CC\\)7\\}\\$EICAR"
-    desc: "EICAR antivirus test string (safe detection canary)"
+- sid: 2000001
+  name: SQL Injection Attempt
+  severity: critical
+  category: exploit
+  proto: TCP
+  ports:
+  - 80
+  - 443
+  - 8080
+  - 8000
+  - 3000
+  - 5000
+  regex: (?:union\s+(?:all\s+)?select|'\s*or\s*'?1'?\s*=\s*'?1|;\s*drop\s+table|sleep\(\d+\)|benchmark\(|waitfor\s+delay|information_schema)
+  desc: SQL injection pattern in HTTP request
+  mitre: T1190
+- sid: 2000002
+  name: Cross-Site Scripting (XSS)
+  severity: high
+  category: exploit
+  proto: TCP
+  ports:
+  - 80
+  - 443
+  - 8080
+  - 8000
+  - 3000
+  - 5000
+  regex: (?:<script[^>]*>|javascript:|onerror\s*=|onload\s*=|<img[^>]+onerror|document\.cookie)
+  desc: Cross-site scripting payload in HTTP traffic
+  mitre: T1059.007
+- sid: 2000003
+  name: Directory Traversal
+  severity: high
+  category: exploit
+  proto: TCP
+  ports:
+  - 80
+  - 443
+  - 8080
+  - 8000
+  - 3000
+  - 5000
+  - 21
+  regex: (?:\.\./\.\./|\.\.\\\.\.\\|%2e%2e[/%]|/etc/passwd|/etc/shadow|boot\.ini|win\.ini)
+  desc: Path traversal attempting to escape the web root
+  mitre: T1083
+- sid: 2000004
+  name: Command Injection
+  severity: critical
+  category: exploit
+  proto: TCP
+  ports:
+  - 80
+  - 443
+  - 8080
+  - 8000
+  - 3000
+  - 5000
+  regex: (?:;\s*(?:cat|ls|id|whoami|uname|wget|curl|nc|bash|sh)\s|\|\s*(?:nc|bash|sh)\s|\$\(\s*(?:id|whoami)\s*\)|`\s*(?:id|whoami)\s*`)
+  desc: Shell command injection in HTTP parameters
+  mitre: T1059
+- sid: 2000005
+  name: Log4Shell / JNDI Injection
+  severity: critical
+  category: exploit
+  proto: TCP
+  regex: \$\{jndi:(?:ldap|ldaps|rmi|dns|iiop|corba|nis)://
+  desc: CVE-2021-44228 JNDI lookup string
+  mitre: T1190
+- sid: 2000006
+  name: Shellshock Exploit
+  severity: critical
+  category: exploit
+  proto: TCP
+  regex: \(\s*\)\s*\{\s*:\s*;\s*\}\s*;
+  desc: CVE-2014-6271 bash environment-variable exploit
+  mitre: T1190
+- sid: 2000007
+  name: Local/Remote File Inclusion
+  severity: high
+  category: exploit
+  proto: TCP
+  ports:
+  - 80
+  - 443
+  - 8080
+  - 8000
+  - 3000
+  - 5000
+  regex: (?:php://(?:input|filter)|data://text|expect://|file:///|=https?://[^&\s]+\.(?:txt|php)\?)
+  desc: File inclusion wrapper in HTTP request
+  mitre: T1190
+- sid: 2001001
+  name: Nikto Web Scanner
+  severity: high
+  category: recon
+  proto: TCP
+  regex: (?:User-Agent:[^\r\n]*Nikto|Nikto/\d)
+  desc: Nikto vulnerability scanner user-agent
+  mitre: T1595.002
+- sid: 2001002
+  name: sqlmap Scanner
+  severity: high
+  category: recon
+  proto: TCP
+  regex: (?:User-Agent:[^\r\n]*sqlmap|sqlmap/\d)
+  desc: sqlmap automated SQL injection tool
+  mitre: T1595.002
+- sid: 2001003
+  name: Directory Brute Forcer
+  severity: medium
+  category: recon
+  proto: TCP
+  regex: User-Agent:[^\r\n]*(?:gobuster|dirbuster|dirb|feroxbuster|ffuf|wfuzz)
+  desc: Content discovery tool user-agent
+  mitre: T1595.003
+- sid: 2001004
+  name: Nmap NSE Probe
+  severity: medium
+  category: recon
+  proto: TCP
+  regex: (?:Nmap Scripting Engine|User-Agent:[^\r\n]*Nmap|nmap\.org/book/nse)
+  desc: Nmap scripting engine service probe
+  mitre: T1046
+- sid: 2001005
+  name: Hydra Brute-Force Tool
+  severity: high
+  category: exploit
+  proto: TCP
+  regex: (?:User-Agent:[^\r\n]*Hydra|Mozilla/4\.0 \(Hydra\))
+  desc: THC-Hydra credential brute-forcing tool
+  mitre: T1110.001
+- sid: 2001006
+  name: Metasploit Default Payload
+  severity: critical
+  category: exploit
+  proto: TCP
+  regex: (?:meterpreter|metasploit|msfconsole|X-Powered-By:[^\r\n]*Metasploit)
+  desc: Metasploit framework artefact in traffic
+  mitre: T1059
+- sid: 2002001
+  name: Reverse Shell Command
+  severity: critical
+  category: exploit
+  proto: TCP
+  regex: (?:bash\s+-i\s*>&\s*/dev/tcp/|nc\s+-[a-z]*e\s*/bin/(?:ba)?sh|python[0-9.]*\s+-c\s+['\"]?import\s+socket|sh\s+-i\s*>&)
+  desc: Reverse shell one-liner observed in payload
+  mitre: T1059.004
+- sid: 2002002
+  name: Cleartext Credentials
+  severity: medium
+  category: policy
+  proto: TCP
+  ports:
+  - 21
+  - 23
+  - 80
+  - 110
+  - 143
+  - 8080
+  regex: (?:^|\r\n)(?:USER\s+\S+|PASS\s+\S+|Authorization:\s*Basic\s+[A-Za-z0-9+/=]+)
+  desc: Credentials transmitted without encryption
+  mitre: T1552.001
+- sid: 2002003
+  name: EICAR Test Signature
+  severity: high
+  category: exploit
+  proto: TCP
+  regex: X5O!P%@AP\[4\\PZX54\(P\^\)7CC\)7\}\$EICAR
+  desc: EICAR antivirus test string (safe detection canary)
+  mitre: T1204
