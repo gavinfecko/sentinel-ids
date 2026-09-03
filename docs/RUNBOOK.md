@@ -1,54 +1,73 @@
-# Lab runbook — step by step
+# Lab runbook — end to end
 
-## 0. One-time host setup
+## Phase 0 — host setup (done)
 ```bash
 cd ~/ids-lab
-make setup
-make test        # expect: 13 passed
-make replay      # expect: 20 alerts, benign silent
+make setup      # venv + scapy/pyyaml/rich
+make test       # 13 passing
+make demo       # replay attack sim -> logs/report.html  (no root, no VM)
 ```
 
-## 1. Boot Kali
-VirtualBox VM `KaliLinux2024` is bridged to en0, so it gets a 192.168.0.x address.
+## Phase 1 — get the Kali VM
+The Kali 2026.2 prebuilt VirtualBox image (amd64) downloads to `~/kali-vm/`.
+When it finishes and the checksum verifies, import + configure it:
+
 ```bash
-# in Kali:
-ip a                      # note Kali's IP
-ping -c1 192.168.0.166    # confirm it can reach the Mac
+bash ~/kali-vm/setup_kali_vm.sh
 ```
-Copy the attack script into Kali (shared folder, scp, or paste):
+This extracts the image, registers the VM, and sets the network adapter to
+**Bridged on en0** with 4 GB RAM / 2 CPUs.
+
+**If a command is blocked** (VirtualBox management can be restricted), do it once in
+the VirtualBox GUI instead:
+1. Extract: `cd ~/kali-vm && 7zz x kali-linux-2026.2-virtualbox-amd64.7z`
+2. VirtualBox → **Tools → Add** → pick the extracted `.vbox` file.
+3. Select the VM → **Settings → Network → Adapter 1** → *Attached to:* **Bridged Adapter**,
+   *Name:* **en0**. OK.
+4. **Start**. Login: `kali` / `kali`.
+
+## Phase 2 — confirm the network
+In Kali:
 ```bash
-scp ~/ids-lab/scripts/kali_attacks.sh kali@<KALI_IP>:~/
+ip -4 addr show eth0        # expect an address on 192.168.0.x
+ping -c1 192.168.0.166      # reach the macOS IDS host
+```
+If Kali gets a 10.x/NAT address instead, the adapter is still on NAT — set it to
+Bridged (Phase 1, step 3) and reboot the VM.
+
+## Phase 3 — run the lab
+**macOS host, terminal 1** — start the sensor (root needed for capture):
+```bash
+cd ~/ids-lab
+sudo .venv/bin/python -m ids.dashboard -i en0 --config config/sentinel.yaml \
+     -f "host <KALI_IP>"
 ```
 
-## 2. Start the IDS (Mac, terminal 1)
+**Kali, terminal 2** — copy the playbook in, then attack:
 ```bash
-sudo .venv/bin/python -m ids.sensor -i en0 -f "host <KALI_IP>" --min-severity low
-```
-Leave it running. Alerts will stream here.
-
-## 3. Attack (Kali, terminal 2)
-```bash
+scp ~/ids-lab/scripts/kali_attacks.sh kali@<KALI_IP>:~/   # or share via folder
 chmod +x kali_attacks.sh
-./kali_attacks.sh 192.168.0.166 portscan   # -> TCP Port Scan alert
-./kali_attacks.sh 192.168.0.166 stealth    # -> NULL/FIN/XMAS alerts
-./kali_attacks.sh 192.168.0.166 sweep      # -> Host Sweep alert
+./kali_attacks.sh 192.168.0.166 portscan   # -> TCP Port Scan
+./kali_attacks.sh 192.168.0.166 stealth    # -> NULL/FIN/XMAS
+./kali_attacks.sh 192.168.0.166 sweep      # -> Host Sweep
 ./kali_attacks.sh 192.168.0.166 web        # -> SQLi/XSS/traversal/log4shell/sqlmap/nikto
-./kali_attacks.sh 192.168.0.166 brute      # -> SSH Brute Force alert
+./kali_attacks.sh 192.168.0.166 brute      # -> SSH Brute Force
 ./kali_attacks.sh 192.168.0.166 synflood   # -> SYN Flood (critical)
 ./kali_attacks.sh 192.168.0.166 all        # everything
 ```
+Missing tools in Kali: `sudo apt update && sudo apt install -y hydra hping3 nikto`.
 
-## 4. Review
+## Phase 4 — report
 ```bash
-# Mac: Ctrl-C the sensor to print the run summary, then:
-cat logs/summary.json
-jq -r '"\(.severity)\t\(.name)\t\(.src_ip) -> \(.dst_ip):\(.dst_port)"' logs/alerts.jsonl
+# macOS: Ctrl-C the sensor, then
+.venv/bin/python -m ids.report -o logs/report.html -t "Kali Lab — Live Run"
+open logs/report.html
+jq -r '"\(.severity)\t\(.name)\t\(.src_ip)->\(.dst_ip):\(.dst_port)\t\(.mitre)"' logs/alerts.jsonl
 ```
 
 ## Troubleshooting
-- **No packets seen**: confirm bridged adapter (not NAT); `en0` is the active Wi-Fi
-  interface (`ifconfig en0`). If on Ethernet, use that interface instead.
-- **Permission denied**: live capture needs `sudo`.
-- **hydra/hping3/nikto missing in Kali**: `sudo apt update && sudo apt install -y hydra hping3 nikto`.
-- **Firewall drops probes before the IDS host app answers**: detection still works —
-  the IDS is passive and sees packets on the wire regardless of whether a service replies.
+- **No packets**: confirm the adapter is Bridged (not NAT), and that `en0` is the active
+  interface (`ifconfig en0` shows the 192.168.0.166 address). On Ethernet, use that iface.
+- **Permission denied on capture**: live sniff needs `sudo`.
+- **Firewall drops probes**: detection still works — the IDS is passive and reads packets
+  off the wire whether or not a local service answers.
