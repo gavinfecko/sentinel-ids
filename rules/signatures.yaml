@@ -170,3 +170,43 @@ signatures:
   regex: X5O!P%@AP\[4\\PZX54\(P\^\)7CC\)7\}\$EICAR
   desc: EICAR antivirus test string (safe detection canary)
   mitre: T1204
+- sid: 2003001
+  name: vsftpd 2.3.4 Backdoor Trigger
+  severity: critical
+  category: backdoor
+  proto: TCP
+  ports:
+  - 21
+  - 2121
+  regex: USER\s[^\r\n]*:\)
+  desc: vsftpd 2.3.4 backdoor trigger (username ending in ':)')
+  mitre: T1190
+- sid: 2003002
+  name: UnrealIRCd Backdoor (CVE-2010-2075)
+  severity: critical
+  category: backdoor
+  proto: TCP
+  ports:
+  - 6667
+  - 6697
+  regex: AB;[^\r\n]+
+  desc: UnrealIRCd 3.2.8.1 backdoor command execution
+  mitre: T1190
+- sid: 2003003
+  name: Interactive Root Shell
+  severity: critical
+  category: post-exploit
+  proto: TCP
+  ports: []
+  regex: uid=0\(root\)|root@[\w.\-]+:[^\s]*#
+  desc: Root shell command output / prompt observed on the wire
+  mitre: T1059
+- sid: 2003004
+  name: Password Hash Exfiltration
+  severity: critical
+  category: post-exploit
+  proto: TCP
+  ports: []
+  regex: 'root:\$[0-9a-z]\$|root:x:0:0:'
+  desc: /etc/shadow or /etc/passwd content in transit
+  mitre: T1003.008

