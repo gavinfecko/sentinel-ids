@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>sentinel-ids Field Guide</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#f5f4f9; --surface:#ffffff; --surface-2:#faf9fd;
+  --ink:#1b1830; --muted:#6a6588; --line:#e5e2ef;
+  --accent:#6d28d9; --accent-ink:#5b21b6; --accent-soft:rgba(109,40,217,.09);
+  --crit:#dc2626; --high:#d97706; --med:#2563eb; --ok:#16a34a;
+  --crit-bg:rgba(220,38,38,.10); --high-bg:rgba(217,119,6,.12); --med-bg:rgba(37,99,235,.10); --ok-bg:rgba(22,163,74,.12);
+  --shadow:0 1px 2px rgba(27,24,48,.06),0 8px 24px rgba(27,24,48,.05);
+}
+:root:not([data-theme="light"]){@media (prefers-color-scheme:dark){:root{
+  --paper:#0e0d16; --surface:#16141f; --surface-2:#1b1826; --ink:#e9e7f2; --muted:#9a94b4; --line:#272233;
+  --accent:#a78bfa; --accent-ink:#c4b5fd; --accent-soft:rgba(167,139,250,.12);
+  --crit:#f87171; --high:#fbbf24; --med:#60a5fa; --ok:#4ade80;
+  --crit-bg:rgba(248,113,113,.13); --high-bg:rgba(251,191,36,.13); --med-bg:rgba(96,165,250,.13); --ok-bg:rgba(74,222,128,.13);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+}}}
+:root[data-theme="dark"]{
+  --paper:#0e0d16; --surface:#16141f; --surface-2:#1b1826; --ink:#e9e7f2; --muted:#9a94b4; --line:#272233;
+  --accent:#a78bfa; --accent-ink:#c4b5fd; --accent-soft:rgba(167,139,250,.12);
+  --crit:#f87171; --high:#fbbf24; --med:#60a5fa; --ok:#4ade80;
+  --crit-bg:rgba(248,113,113,.13); --high-bg:rgba(251,191,36,.13); --med-bg:rgba(96,165,250,.13); --ok-bg:rgba(74,222,128,.13);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;line-height:1.6;
+  -webkit-font-smoothing:antialiased;font-size:16px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+code,.k{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:.86em;
+  background:var(--accent-soft);color:var(--accent-ink);padding:1px 6px;border-radius:5px;white-space:nowrap}
+a{color:var(--accent-ink)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:44px;align-items:start}
+@media (max-width:820px){.layout{grid-template-columns:1fr;gap:0}.toc{position:static!important;margin-bottom:20px}}
+
+/* header */
+header.hero{border-bottom:1px solid var(--line);background:
+  radial-gradient(120% 140% at 88% -10%,var(--accent-soft),transparent 60%),var(--surface)}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink)}
+.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.05;margin:14px 0 8px;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+.hero p.lede{font-size:18px;color:var(--muted);max-width:60ch;margin:0 0 26px}
+.hero .wrap{padding-top:46px;padding-bottom:34px}
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media (max-width:680px){.tiles{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.tile .n{font-family:"IBM Plex Mono",monospace;font-size:28px;font-weight:600;letter-spacing:-.02em}
+.tile .l{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* toc */
+.toc{position:sticky;top:22px}
+.toc .cap{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:s}
+.toc li{counter-increment:s;margin:1px 0}
+.toc a{display:block;text-decoration:none;color:var(--muted);font-size:13.5px;padding:5px 8px;border-radius:7px;border-left:2px solid transparent}
+.toc a::before{content:counter(s,decimal-leading-zero);font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--accent-ink);margin-right:8px}
+.toc a:hover{color:var(--ink);background:var(--accent-soft)}
+
+/* sections */
+main{padding:40px 0 80px}
+section{padding:14px 0 30px;border-top:1px solid var(--line);margin-top:26px}
+section:first-child{border-top:none;margin-top:8px}
+.sec-eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);display:flex;align-items:center;gap:10px}
+.sec-eyebrow .num{color:var(--muted)}
+h2{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:8px 0 14px;text-wrap:balance}
+h3{font-size:16px;font-weight:600;margin:24px 0 8px}
+p{max-width:68ch}
+ul,ol.list{max-width:68ch;padding-left:20px}
+li{margin:5px 0}
+.lead{color:var(--ink)}
+strong{font-weight:600}
+
+/* callout */
+.note{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--surface);
+  border-radius:0 10px 10px 0;padding:14px 18px;margin:18px 0;box-shadow:var(--shadow);max-width:70ch}
+.note .t{font-weight:600;font-size:14px;margin-bottom:3px}
+.note.win{border-left-color:var(--ok)} .note.risk{border-left-color:var(--high)}
+
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:16px 0;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:14px;background:var(--surface)}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+tr:last-child td{border-bottom:none}
+td.mono,th.mono{font-family:"IBM Plex Mono",monospace}
+.sev{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.s-crit{color:var(--crit);background:var(--crit-bg)} .s-high{color:var(--high);background:var(--high-bg)}
+.s-med{color:var(--med);background:var(--med-bg)} .s-ok{color:var(--ok);background:var(--ok-bg)}
+
+/* pipeline diagram */
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin:20px 0;overflow-x:auto;padding-bottom:4px}
+.stage{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;position:relative}
+.stage+.stage{margin-left:26px}
+.stage+.stage::before{content:"";position:absolute;left:-20px;top:50%;width:14px;height:2px;background:var(--accent)}
+.stage+.stage::after{content:"";position:absolute;left:-9px;top:50%;transform:translateY(-50%);border-left:6px solid var(--accent);border-top:4px solid transparent;border-bottom:4px solid transparent}
+.stage .h{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:var(--accent-ink)}
+.stage .d{font-size:12.5px;color:var(--muted);margin-top:3px}
+
+/* kill chain */
+.chain{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.chain .step{flex:1;min-width:150px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface)}
+.chain .step .p{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--accent-ink);text-transform:uppercase;letter-spacing:.08em}
+.chain .step .w{font-size:13px;margin-top:4px}
+
+/* q&a */
+.qa{border:1px solid var(--line);border-radius:12px;background:var(--surface);margin:12px 0;overflow:hidden;box-shadow:var(--shadow)}
+.qa summary{cursor:pointer;padding:15px 18px;font-weight:600;font-size:15px;list-style:none;display:flex;gap:12px;align-items:baseline}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary .q{font-family:"IBM Plex Mono",monospace;color:var(--accent-ink);font-size:13px;flex:none}
+.qa summary::after{content:"+";margin-left:auto;color:var(--muted);font-family:"IBM Plex Mono",monospace;font-size:18px;flex:none}
+.qa[open] summary::after{content:"\2212"}
+.qa .a{padding:0 18px 16px 48px;color:var(--ink);font-size:14.5px}
+.qa .a p{margin:6px 0}
+.qa[open] summary{border-bottom:1px solid var(--line)}
+
+pre{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;
+  font-family:"IBM Plex Mono",monospace;font-size:13px;line-height:1.5;color:var(--ink)}
+.foot{border-top:1px solid var(--line);color:var(--muted);font-size:13px;padding:26px 0 60px}
+.foot code{white-space:pre-wrap}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+html{scroll-behavior:smooth}
+</style>
+</head>
+<body>
+
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Project field guide &middot; Interview prep</div>
+    <h1>sentinel-ids</h1>
+    <p class="lede">A network intrusion detection system built from scratch in Python, proven against a live Kali attacker and a rooted Metasploitable target. This guide is everything you need to explain it, run it, and defend it in an interview.</p>
+    <div class="tiles">
+      <div class="tile"><div class="n">8</div><div class="l">stateful detectors</div></div>
+      <div class="tile"><div class="n">20</div><div class="l">payload signatures</div></div>
+      <div class="tile"><div class="n">20</div><div class="l">tests passing</div></div>
+      <div class="tile"><div class="n">12</div><div class="l">attack classes detected</div></div>
+      <div class="tile"><div class="n">2</div><div class="l">root compromises</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap layout">
+  <nav class="toc" aria-label="Contents">
+    <p class="cap">Contents</p>
+    <ol>
+      <li><a href="#pitch">The pitch</a></li>
+      <li><a href="#arch">Architecture</a></li>
+      <li><a href="#detect">How detection works</a></li>
+      <li><a href="#sigs">Signature engine</a></li>
+      <li><a href="#lab">The lab &amp; networking</a></li>
+      <li><a href="#pentest">The penetration test</a></li>
+      <li><a href="#ml">ML anomaly detection</a></li>
+      <li><a href="#corr">Correlation &amp; risk</a></li>
+      <li><a href="#notify">Notifications</a></li>
+      <li><a href="#results">Validation results</a></li>
+      <li><a href="#qa">Interview Q&amp;A</a></li>
+      <li><a href="#run">Run it yourself</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <section id="pitch">
+      <div class="sec-eyebrow"><span class="num">01</span> The pitch</div>
+      <h2>What it is, in one breath</h2>
+      <p class="lead">sentinel-ids passively watches a network interface, decodes every packet, and decides whether the traffic is an attack. It does this two ways at once: <strong>stateful heuristics</strong> that recognize behavior over time (a port scan is many connection attempts in a few seconds), and a <strong>signature engine</strong> that matches known-malicious byte patterns in payloads (a SQL injection string, a Log4Shell probe). Every alert is tagged with its MITRE ATT&amp;CK technique, streamed to a live console, logged as JSON for a SIEM, and rolled into an HTML report.</p>
+      <p>The project has two halves that meet in the middle. The <strong>defensive</strong> half is the IDS. The <strong>offensive</strong> half is a Kali Linux VM that runs real attacks so each detection is proven against genuine traffic, not a simulation. A separate engagement roots a deliberately vulnerable Metasploitable target and the IDS watches that too.</p>
+      <div class="note">
+        <div class="t">The one-sentence version for a recruiter</div>
+        "I built a Python IDS that detects scans, floods, spoofing, and web exploits in real time, mapped every detection to MITRE ATT&amp;CK, and validated it end to end by attacking my own lab with Kali and rooting a Metasploitable box."
+      </div>
+    </section>
+
+    <section id="arch">
+      <div class="sec-eyebrow"><span class="num">02</span> Architecture</div>
+      <h2>How a packet becomes an alert</h2>
+      <p>The pipeline is deliberately simple and single-purpose at each stage. Understanding this flow is the fastest way to answer "walk me through your code."</p>
+      <div class="flow">
+        <div class="stage"><div class="h">capture</div><div class="d">scapy sniffs the NIC live, or replays a .pcap</div></div>
+        <div class="stage"><div class="h">parse</div><div class="d">each frame &rarr; flat PacketRecord: proto, ports, flags, payload, TTL</div></div>
+        <div class="stage"><div class="h">engine</div><div class="d">feeds the record to every detector; tracks stats</div></div>
+        <div class="stage"><div class="h">detectors</div><div class="d">7 heuristics + 1 signature engine return Alerts</div></div>
+        <div class="stage"><div class="h">sinks</div><div class="d">console, JSONL, live TUI, notifications</div></div>
+      </div>
+      <h3>The modules</h3>
+      <div class="tbl"><table>
+        <tr><th>File</th><th>Responsibility</th></tr>
+        <tr><td class="mono">packet.py</td><td>Turns a scapy frame into a flat <span class="k">PacketRecord</span> so detectors never touch scapy internals.</td></tr>
+        <tr><td class="mono">detectors.py</td><td>A sliding-window primitive plus eight detectors, each cooldown-throttled.</td></tr>
+        <tr><td class="mono">engine.py</td><td>Owns the detectors, feeds packets through, keeps counters, garbage-collects state every 30s.</td></tr>
+        <tr><td class="mono">alerts.py</td><td>The <span class="k">Alert</span> dataclass, the <span class="k">AlertBus</span> fan-out, and the console + JSONL sinks.</td></tr>
+        <tr><td class="mono">sensor.py</td><td>CLI entry point: live sniff or pcap replay, BPF filter, run summary.</td></tr>
+        <tr><td class="mono">dashboard.py</td><td>The live terminal UI (rich): severity counters and a streaming feed.</td></tr>
+        <tr><td class="mono">report.py / correlate.py / ml_anomaly.py / notify.py</td><td>HTML report, incident correlation, ML detector, real-time notifications.</td></tr>
+      </table></div>
+    </section>
+
+    <section id="detect">
+      <div class="sec-eyebrow"><span class="num">03</span> How detection works</div>
+      <h2>Stateful heuristics</h2>
+      <p>Signatures alone can't catch a port scan, because no single packet is malicious. The trick is <strong>state over a sliding time window</strong>. Each heuristic keeps a small per-source history and fires when a threshold is crossed. Two shared mechanisms keep this practical:</p>
+      <ul>
+        <li><strong>Sliding windows</strong> track events per key (usually source IP) over a rolling number of seconds, so "15 distinct ports in 10 seconds" is a natural rule.</li>
+        <li><strong>Cooldowns</strong> collapse a flood into one alert. A 500-packet SYN flood should page you once, not five hundred times.</li>
+        <li><strong>Garbage collection</strong> drops idle keys every 30 seconds so memory stays bounded on a busy link.</li>
+      </ul>
+      <div class="tbl"><table>
+        <tr><th>SID</th><th>Detector</th><th>How it decides</th><th>Sev</th><th>ATT&amp;CK</th></tr>
+        <tr><td class="mono">1000001</td><td>TCP Port Scan</td><td>Many distinct destination ports from one source in a short window</td><td><span class="sev s-high">high</span></td><td class="mono">T1046</td></tr>
+        <tr><td class="mono">1000002</td><td>Stealth Scan</td><td>Illegal TCP flag combos (NULL, FIN, XMAS, Maimon) real stacks never send</td><td><span class="sev s-high">high</span></td><td class="mono">T1046</td></tr>
+        <tr><td class="mono">1000003</td><td>Host Sweep</td><td>One source probing many distinct hosts</td><td><span class="sev s-med">medium</span></td><td class="mono">T1018</td></tr>
+        <tr><td class="mono">1000004</td><td>SYN Flood / DoS</td><td>SYN rate to a target crosses a per-window threshold</td><td><span class="sev s-crit">critical</span></td><td class="mono">T1499</td></tr>
+        <tr><td class="mono">1000005</td><td>ARP Spoofing</td><td>An IP's MAC binding changes: the fingerprint of a MITM</td><td><span class="sev s-crit">critical</span></td><td class="mono">T1557</td></tr>
+        <tr><td class="mono">1000006</td><td>Brute Force</td><td>Many connection attempts to an auth port (22/21/…)</td><td><span class="sev s-high">high</span></td><td class="mono">T1110</td></tr>
+        <tr><td class="mono">1000007</td><td>ICMP Anomaly</td><td>Oversized or low-entropy ICMP payloads: tunneling / exfil</td><td><span class="sev s-med">medium</span></td><td class="mono">T1048</td></tr>
+      </table></div>
+    </section>
+
+    <section id="sigs">
+      <div class="sec-eyebrow"><span class="num">04</span> Signature engine</div>
+      <h2>Matching known-bad payloads</h2>
+      <p>The signature engine loads 20 rules from <span class="k">rules/signatures.yaml</span>, each a compiled regex with a protocol, a port set, a severity, a description, and a MITRE technique. It runs them against packet payloads. Rules cover web exploits (SQLi, XSS, directory traversal, command injection, Log4Shell, Shellshock), scanner fingerprints (sqlmap, Nikto, Hydra user-agents), reverse shells, cleartext credentials, and the specific Metasploitable exploits this project used.</p>
+      <div class="note win">
+        <div class="t">The evasion story worth telling</div>
+        The first live run <em>missed</em> a SQL injection. The attack URL-encoded its spaces as <span class="k">%20</span>, and the regex expected literal whitespace (<span class="k">union\s+select</span>). That is a classic IDS-evasion gap. The fix hardened the pattern to also match <span class="k">%20</span>, <span class="k">+</span>, and <span class="k">/**/</span> comment evasion, then re-attacked to confirm the catch. "I found an evasion in my own tool and closed it" is a strong thing to say out loud.
+      </div>
+      <h3>Exploit &amp; post-exploit signatures (added after the pen test)</h3>
+      <div class="tbl"><table>
+        <tr><th>SID</th><th>Signature</th><th>What it catches</th><th>ATT&amp;CK</th></tr>
+        <tr><td class="mono">2003001</td><td>vsftpd 2.3.4 backdoor</td><td>FTP username ending in <span class="k">:)</span> (CVE-2011-2523 trigger)</td><td class="mono">T1190</td></tr>
+        <tr><td class="mono">2003002</td><td>UnrealIRCd backdoor</td><td>The <span class="k">AB;</span> command prefix (CVE-2010-2075)</td><td class="mono">T1190</td></tr>
+        <tr><td class="mono">2003003</td><td>Interactive root shell</td><td><span class="k">uid=0(root)</span> or a root prompt on the wire</td><td class="mono">T1059</td></tr>
+        <tr><td class="mono">2003004</td><td>Hash exfiltration</td><td><span class="k">/etc/shadow</span> or <span class="k">/etc/passwd</span> content in transit</td><td class="mono">T1003.008</td></tr>
+      </table></div>
+    </section>
+
+    <section id="lab">
+      <div class="sec-eyebrow"><span class="num">05</span> The lab &amp; networking</div>
+      <h2>Where the packets actually flow</h2>
+      <p>The lab is two VirtualBox VMs and the macOS host, all on hardware you own. The networking choices are the part interviewers probe, because they reveal whether you understand what you built.</p>
+      <h3>Detection lab: Kali attacks the host</h3>
+      <p>Kali is <strong>bridged</strong> onto the same LAN as the Mac, so the Mac's sensor sees Kali's packets directly. Bridged networking over Wi-Fi has a known quirk: the access point expects one MAC per client, so host-to-VM unicast is flaky, but VM-to-host works cleanly, and that is the only direction the IDS needs.</p>
+      <h3>Pen-test lab: Kali attacks Metasploitable</h3>
+      <p>Metasploitable is intentionally, remotely exploitable, so it lives on an <strong>isolated internal network</strong> with no route to the host, the LAN, or the internet. That containment is a deliberate safety decision, and saying so unprompted signals maturity.</p>
+      <div class="note risk">
+        <div class="t">Why not host-only networking?</div>
+        Host-only would have been ideal (isolated and sniffable from the host), but it needs VirtualBox's network kernel extension, which requires a macOS approval and reboot that wasn't available. The workaround, capturing the engagement on Kali with tcpdump and analyzing it on the host, mirrors real SOC practice: capture in the field, analyze at the workstation.
+      </div>
+      <h3>One detail worth knowing cold</h3>
+      <p>The sensor sniffs without <span class="k">sudo</span> because the user is in the macOS <span class="k">access_bpf</span> group, which grants read access to the packet-capture devices. That is why the whole thing can run and be scripted without root.</p>
+    </section>
+
+    <section id="pentest">
+      <div class="sec-eyebrow"><span class="num">06</span> The penetration test</div>
+      <h2>Rooting Metasploitable 2</h2>
+      <p>A black-box engagement from Kali (<span class="mono">10.10.10.10</span>) against Metasploitable 2 (<span class="mono">10.10.10.50</span>). Recon with nmap enumerated 23 exposed services; two were exploited to full root, and the root password hash was pulled from <span class="k">/etc/shadow</span>.</p>
+      <div class="chain">
+        <div class="step"><div class="p">Reconnaissance</div><div class="w">nmap <span class="mono">-sS -sV -O</span> maps 23 services and their versions</div></div>
+        <div class="step"><div class="p">Exploitation</div><div class="w">vsftpd 2.3.4 backdoor &rarr; root shell on port 6200</div></div>
+        <div class="step"><div class="p">Actions</div><div class="w">open 1524 bindshell &rarr; second root; dump <span class="mono">/etc/shadow</span></div></div>
+      </div>
+      <div class="tbl"><table>
+        <tr><th>Service</th><th>Version</th><th>Vulnerability</th><th>Result</th></tr>
+        <tr><td>FTP (21)</td><td class="mono">vsftpd 2.3.4</td><td>CVE-2011-2523 command backdoor</td><td><span class="sev s-crit">rooted</span></td></tr>
+        <tr><td>bindshell (1524)</td><td>&mdash;</td><td>Unauthenticated root shell left open</td><td><span class="sev s-crit">rooted</span></td></tr>
+        <tr><td>IRC (6667)</td><td class="mono">UnrealIRCd</td><td>CVE-2010-2075 backdoor</td><td><span class="sev s-high">confirmed</span></td></tr>
+        <tr><td>SMB (139/445)</td><td class="mono">Samba 3.x</td><td>CVE-2007-2447 usermap_script</td><td><span class="sev s-high">confirmed</span></td></tr>
+      </table></div>
+      <p>The exploits were run <strong>by hand</strong>, not through Metasploit (its runtime was broken on the Kali image). Manual exploitation is the stronger interview story anyway: it shows you understand the vulnerability mechanism, not just how to click a module.</p>
+    </section>
+
+    <section id="ml">
+      <div class="sec-eyebrow"><span class="num">07</span> ML anomaly detection</div>
+      <h2>Catching what no rule anticipated</h2>
+      <p>Signatures and heuristics only catch what you thought to describe. The ML detector (<span class="k">ml_anomaly.py</span>) adds unsupervised coverage: it learns a baseline of normal traffic and flags statistical outliers, using an <strong>Isolation Forest</strong> from scikit-learn.</p>
+      <p>It builds one feature vector per source IP per time window, with eight features: packet count, distinct destination ports, distinct destination hosts, SYN count, SYN ratio, mean packet size, distinct flag combinations, and total bytes. Trained on a benign capture, it then scores new traffic; an outlier is an anomaly.</p>
+      <div class="note win">
+        <div class="t">It works on real captures</div>
+        Trained only on benign browsing, it independently flagged the attacker in traffic it had never seen: the 1001-port scan (huge port fan-out, 0.93 SYN ratio) and the SYN flood (10,238 packets, SYN ratio 1.0), with no signature involved. This is the concrete backing for "machine learning for security analytics."
+      </div>
+    </section>
+
+    <section id="corr">
+      <div class="sec-eyebrow"><span class="num">08</span> Correlation &amp; risk</div>
+      <h2>From alerts to incidents</h2>
+      <p>A raw alert stream is noise. An analyst wants "what happened." The correlation engine (<span class="k">correlate.py</span>) folds alerts into attacker-centric <strong>incidents</strong>: it groups by host-pair (so the attacker's probes and the victim's responses land together), attributes the attacker from who initiated reconnaissance, maps each alert to a kill-chain stage, and computes a risk score from severity plus how far the attack progressed.</p>
+      <p>Run against the Metasploitable engagement, 28 scattered alerts fold into <strong>one incident</strong>: attacker <span class="mono">10.10.10.10</span>, the full chain Reconnaissance &rarr; Exploitation &rarr; Actions on Objectives, risk score 130. That is the difference between a log and a story.</p>
+    </section>
+
+    <section id="notify">
+      <div class="sec-eyebrow"><span class="num">09</span> Notifications</div>
+      <h2>Getting paged in real time</h2>
+      <p>A notification sink fires on high-severity alerts through any of four channels, all from the standard library (no extra dependencies): a macOS desktop banner for local demos, <strong>ntfy</strong> for free push to your phone with no account, a Slack or Discord webhook, and Resend for email. Alerts are severity-gated and rate-limited per signature so one attack doesn't spam you. The ntfy path is verified end to end: a critical alert arrives on the phone with a title, priority, and a warning-light tag.</p>
+    </section>
+
+    <section id="results">
+      <div class="sec-eyebrow"><span class="num">10</span> Validation results</div>
+      <h2>The numbers you can quote</h2>
+      <div class="tbl"><table>
+        <tr><th>Engagement</th><th>Traffic</th><th>Detections</th></tr>
+        <tr><td>Kali &rarr; host (detection run)</td><td class="mono">7,490 packets</td><td>16 alerts, 12 attack classes</td></tr>
+        <tr><td>Kali &rarr; Metasploitable (pen test)</td><td class="mono">2,647 packets</td><td>28 alerts, 9 signatures, full kill chain</td></tr>
+        <tr><td>Wireshark cross-check</td><td class="mono">10,244 packets</td><td>tshark and the IDS agree on the same .pcapng</td></tr>
+      </table></div>
+      <p>The Wireshark cross-check matters: the same capture, read by Wireshark's own engine and by the IDS, produces the same findings. Tool agreement is what rigor looks like.</p>
+    </section>
+
+    <section id="qa">
+      <div class="sec-eyebrow"><span class="num">11</span> Interview Q&amp;A</div>
+      <h2>Questions you should be ready for</h2>
+      <p>Open each one and answer it out loud before reading. These are the questions this project invites.</p>
+
+      <details class="qa"><summary><span class="q">Q</span> What's the difference between an IDS and an IPS?</summary>
+      <div class="a"><p>An IDS <em>detects</em> and alerts; it's passive and sits out of band. An IPS <em>prevents</em>, sitting inline so it can drop or block malicious traffic. sentinel-ids is an IDS: it observes a copy of the traffic and raises alerts, which is why it can run without being in the packet path.</p></div></details>
+
+      <details class="qa"><summary><span class="q">Q</span> Signature-based vs anomaly-based detection, and which did you build?</summary>
+      <div class="a"><p>Signature-based matches known-bad patterns: precise, low false positives, but blind to novel attacks. Anomaly-based flags deviations from normal: catches new threats but noisier. I built both. The heuristics and regex engine are signature/rule-based; the Isolation Forest is anomaly-based. Layering them is how real systems balance precision and coverage.</p></div></details>
+
+      <details class="qa"><summary><span class="q">Q</span> How do you detect a port scan when no single packet is malicious?</summary>
+      <div class="a"><p>State over a sliding time window. I track distinct destination ports per source IP over a rolling window and alert when the count crosses a threshold, for example 15 distinct ports in 10 seconds. A cooldown then suppresses duplicates so one scan is one alert.</p></div></details>
+
+      <details class="qa"><summary><span class="q">Q</span> What is a NULL / FIN / XMAS scan and why can you detect it?</summary>
+      <div class="a"><p>They're stealth scans that send TCP packets with unusual flag combinations: no flags (NULL), only FIN, or FIN+PSH+URG (XMAS). A compliant stack answers closed ports with RST and stays silent on open ones, which leaks port state. A real connection never sends these combinations, so their mere presence is the signature.</p></div></details>
+
+      <details class="qa"><summary><span class="q">Q</span> How does the ARP spoofing detector work?</summary>
+      <div class="a"><p>It tracks the MAC address bound to each IP. When an IP suddenly maps to a new MAC, that's the fingerprint of ARP cache poisoning, the setup for a man-in-the-middle. In the lab this also fired benignly when the VM's MAC changed, which is a good example to raise: a true detection of the mechanism that a real deployment would tune with a host allowlist.</p></div></details>
+
+      <details class="qa"><summary><span class="q">Q</span> Walk me through the vsftpd 2.3.4 exploit.</summary>
+      <div class="a"><p>vsftpd 2.3.4 shipped with a backdoor (CVE-2011-2523). If the FTP username ends in <span class="k">:)</span>, the daemon opens a root shell listening on port 6200. So you connect to FTP, send a username with the smiley, then connect to 6200 and you're root. No password, no memory corruption, just a malicious build.</p></div></details>
+
+      <details class="qa"><summary><span class="q">Q</span> How did you avoid false positives?</summary>
+      <div class="a"><p>Thresholds tuned to real behavior, cooldowns to prevent alert storms, and a dedicated zero-false-positive test: normal repeated HTTPS traffic to one host must not trip the scan detectors. It's one of 20 tests in the suite.</p></div></details>
+
+      <details class="qa"><summary><span class="q">Q</span> What's MITRE ATT&amp;CK and why tag alerts with it?</summary>
+      <div class="a"><p>It's a knowledge base of real adversary tactics and techniques. Tagging each alert with its technique ID (a port scan is T1046, Network Service Discovery) lets defenders speak a common language, map coverage, and hand analysts context. It's expected vocabulary in a SOC.</p></div></details>
+
+      <details class="qa"><summary><span class="q">Q</span> Why put Metasploitable on an isolated network?</summary>
+      <div class="a"><p>Because it's deliberately, remotely exploitable. Bridging it to a real network would expose an unpatched, rootable box to anything on that network. I put it on an internal-only VirtualBox network with no host, LAN, or internet route, so the only thing that can reach it is the Kali attacker.</p></div></details>
+
+      <details class="qa"><summary><span class="q">Q</span> What would you improve or do differently?</summary>
+      <div class="a"><p>Honest answers land well: add TLS/encrypted-traffic analysis (payload signatures can't see into TLS), tune the ARP detector with a host allowlist, expand the ML feature set and validate on a larger benign baseline, and add IPS-style blocking as an option. I'd also fix the Metasploit runtime so exploitation can use modules alongside the manual work.</p></div></details>
+
+      <details class="qa"><summary><span class="q">Q</span> How would this scale to real network volume?</summary>
+      <div class="a"><p>The Python/scapy path is fine for a lab but not line-rate. At scale you'd tap traffic with a proper capture layer (AF_PACKET, PF_RING, or a SPAN port), keep the sliding-window state bounded with periodic GC (which I already do), and for production reach for a purpose-built engine like Suricata or Zeek, feeding alerts into a SIEM. My JSONL output is already shaped for that ingest.</p></div></details>
+    </section>
+
+    <section id="run">
+      <div class="sec-eyebrow"><span class="num">12</span> Run it yourself</div>
+      <h2>The fastest paths to a working demo</h2>
+      <p>The offline demo needs no VM and no root. It synthesizes one clean example of every attack, runs the IDS, and writes an HTML report.</p>
+      <pre>cd ~/ids-lab
+make setup      # venv + scapy, pyyaml, rich
+make test       # 20 tests
+make demo       # replay attacks -> logs/report.html
+
+# correlate an alert log into incidents
+sentinel-correlate -i logs/pentest_alerts.jsonl -o incidents.html
+
+# train the ML detector on benign traffic, then score a capture
+sentinel-ml train -b logs/benign_baseline.pcap
+sentinel-ml score -r logs/wireshark_capture.pcapng</pre>
+      <p>For a live run, start the sensor on the host and attack from Kali. The full step-by-step, including current IP discovery, is in <span class="k">docs/RUNBOOK.md</span>. The pen-test writeup is <span class="k">docs/PENTEST_REPORT.html</span>.</p>
+    </section>
+
+    <div class="foot">
+      <p>sentinel-ids &middot; built and validated in a controlled home lab for education. Repository: <span class="mono">github.com/gavinfecko/sentinel-ids</span> (private). This guide reflects the project as of the latest build: 8 detectors, 20 signatures, 20 tests, ML anomaly detection, incident correlation, and multi-channel notifications.</p>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>
