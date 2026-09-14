@@ -90,6 +90,22 @@ Watch alerts appear in real time, then build the report:
   top talkers, full alert detail. Rendered from any run's `alerts.jsonl`.
 - **JSONL alert log** — one JSON object per alert, ready for Splunk/Elastic ingest.
 
+## Validation results
+
+Two live engagements were run and captured (see `docs/` and `logs/`):
+
+1. **Detection run — Kali → host.** Real Nmap, hping3, and web attacks from the Kali VM were
+   captured with `dumpcap` to a Wireshark `.pcapng` and independently flagged by the IDS engine.
+   Wireshark (`tshark`) and the IDS agree on the same capture: SYN flood, stealth scan, SQL
+   injection, and XSS. Artifact: `logs/wireshark_capture.pcapng`.
+2. **Penetration test — Kali → Metasploitable 2.** On an isolated internal network, a full
+   black-box test enumerated 23 services and exploited two vulnerabilities to root
+   (vsftpd 2.3.4 backdoor CVE-2011-2523, and an open bindshell), extracting the root hash from
+   `/etc/shadow`. The engagement traffic was captured and the IDS detected the recon and
+   exploitation (port scan, NSE probes, Metasploit-payload signature, cleartext credentials).
+   Report: `docs/PENTEST_REPORT.html`; evidence: `docs/pentest_evidence.txt`;
+   attack script: `scripts/pentest_metasploitable.sh`.
+
 ## Architecture
 
 ```
