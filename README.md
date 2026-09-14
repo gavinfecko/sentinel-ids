@@ -5,10 +5,10 @@ Kali Linux attack lab that proves each detection end to end. Signature matching 
 stateful traffic heuristics, MITRE ATT&CK–mapped alerts, a live terminal dashboard,
 and an auto-generated HTML incident report.
 
-![CI](https://img.shields.io/badge/tests-13%20passing-brightgreen)
+![CI](https://img.shields.io/badge/tests-20%20passing-brightgreen)
 ![python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![detectors](https://img.shields.io/badge/detectors-8-orange)
-![signatures](https://img.shields.io/badge/signatures-16-orange)
+![signatures](https://img.shields.io/badge/signatures-20-orange)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ---
@@ -19,7 +19,10 @@ sentinel-ids passively sniffs a network interface (or replays a pcap), normalise
 packet, and runs it through **eight stateful detectors** and a **regex signature engine**.
 Alerts stream to a colourised console or a live TUI, land in newline-delimited JSON for
 SIEM ingest, and roll up into a shareable HTML report. Every alert is tagged with its
-**MITRE ATT&CK technique**.
+**MITRE ATT&CK technique**. Beyond raw detection it also **correlates alerts into
+attacker-centric incidents** with a kill-chain timeline and risk score, runs an optional
+**Isolation-Forest anomaly detector** for novel threats, and **pushes high-severity alerts**
+to your phone (ntfy), desktop, Slack, or email in real time.
 
 ## Lab topology
 
@@ -47,13 +50,28 @@ sensor sees the attacker's packets directly. Everything runs on hardware you own
 | 1000005   | ARP Spoofing / MITM     | critical | ARP cache poison  | T1557.002 |
 | 1000006   | Credential Brute Force  | high     | hydra             | T1110   |
 | 1000007   | ICMP Anomaly / Tunnel   | medium   | oversized ICMP    | T1048.003 |
-| 2000001+  | 16 payload signatures   | varies   | SQLi, XSS, traversal, cmd-injection, Log4Shell, Shellshock, reverse shells, sqlmap/nikto/hydra | T1190, T1059, … |
+| 2000001+  | 20 payload signatures   | varies   | SQLi, XSS, traversal, cmd-injection, Log4Shell, Shellshock, reverse shells, sqlmap/nikto/hydra | T1190, T1059, … |
+| 2003001-4 | exploit & post-exploit  | critical | vsftpd 2.3.4 backdoor, UnrealIRCd backdoor, interactive root shell, /etc/shadow exfiltration | T1190, T1059, T1003.008 |
+
+## Beyond detection
+
+- **Incident correlation** — `sentinel-correlate -i logs/alerts.jsonl -o incidents.html`
+  folds the flat alert stream into attacker-centric incidents: host-pair grouping,
+  attacker attribution, kill-chain stage mapping (Recon → Exploitation → Actions → Impact),
+  and a risk score. The Metasploitable engagement folds to one risk-130 incident.
+- **ML anomaly detection** — `sentinel-ml train -b <benign.pcap>` then
+  `sentinel-ml score -r <capture.pcap>` learns normal per-source behaviour with an
+  Isolation Forest and flags deviating traffic (catches the 1001-port scan and the SYN
+  flood with no signature). Install with `pip install -e .[ml]`.
+- **Real-time notifications** — enable the `notify:` block in `config/sentinel.yaml` to
+  push high-severity alerts to your phone via **ntfy** (free, no account), a macOS banner,
+  a Slack/Discord webhook, or **Resend** email.
 
 ## Quick start
 
 ```bash
 make setup     # venv + deps (scapy, pyyaml, rich)
-make test      # 13 unit + integration tests
+make test      # 20 unit + integration tests
 make demo      # replay a synthetic attack pcap -> alerts + HTML report (no root)
 ```
 
@@ -117,10 +135,13 @@ ids/
   sensor.py       CLI: live sniff or pcap replay, BPF filter, run summary
   dashboard.py    live rich TUI
   report.py       alerts.jsonl -> self-contained HTML incident report
+  correlate.py    alerts -> attacker-centric incidents (kill chain + risk score)
+  ml_anomaly.py   Isolation-Forest anomaly detector (train on benign, score traffic)
+  notify.py       real-time sink: ntfy / desktop / webhook / email
 config/sentinel.yaml   tunable thresholds + per-detector enable/disable
-rules/signatures.yaml  16 regex payload signatures, each ATT&CK-mapped
+rules/signatures.yaml  20 regex payload signatures, each ATT&CK-mapped
 scripts/          attack-pcap generator · Kali attack playbook · launchers
-tests/            13 tests: parsing, every detector, zero-false-positive guard
+tests/            20 tests: parsing, every detector, correlation, ML, notify, zero-FP guard
 ```
 
 **Engineering notes**
