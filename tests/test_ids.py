@@ -109,3 +109,22 @@ def test_benign_no_false_positive():
     for i in range(5):
         pk.append(eth(IP(src=TGT,dst="8.8.8.8")/TCP(sport=60000+i,dport=443,flags="SA")))
     assert run(pk) == []
+
+
+def test_correlation_incident():
+    from ids.correlate import correlate
+    A, V = "10.0.0.5", "10.0.0.9"
+    alerts = [
+        {"sid":1000001,"name":"TCP Port Scan","severity":"high","category":"recon",
+         "src_ip":A,"dst_ip":V,"mitre":"T1046","ts":"2026-09-14T17:00:00+00:00"},
+        {"sid":2003001,"name":"vsftpd Backdoor","severity":"critical","category":"backdoor",
+         "src_ip":A,"dst_ip":V,"mitre":"T1190","ts":"2026-09-14T17:00:05+00:00"},
+        {"sid":2003003,"name":"Root Shell","severity":"critical","category":"post-exploit",
+         "src_ip":V,"dst_ip":A,"mitre":"T1059","ts":"2026-09-14T17:00:07+00:00"},
+    ]
+    inc = correlate(alerts, gap=120)
+    assert len(inc) == 1                       # both directions -> one incident
+    assert inc[0].attacker == A                # recon initiator is the attacker
+    assert inc[0].targets == [V]
+    assert "Actions on Objectives" in inc[0].stages
+    assert inc[0].score > 0
