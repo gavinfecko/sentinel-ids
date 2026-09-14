@@ -15,11 +15,14 @@ dependencies = ["scapy>=2.6", "pyyaml>=6.0", "rich>=13.0"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+ml = ["scikit-learn>=1.3", "numpy>=1.24", "joblib>=1.3"]
 
 [project.scripts]
 sentinel-ids = "ids.sensor:main"
 sentinel-dash = "ids.dashboard:main"
 sentinel-report = "ids.report:main"
+sentinel-correlate = "ids.correlate:main"
+sentinel-ml = "ids.ml_anomaly:main"
 
 [tool.setuptools]
 packages = ["ids"]

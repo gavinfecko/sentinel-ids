@@ -128,3 +128,25 @@ def test_correlation_incident():
     assert inc[0].targets == [V]
     assert "Actions on Objectives" in inc[0].stages
     assert inc[0].score > 0
+
+
+def test_ml_anomaly_flags_scan():
+    from ids import ml_anomaly as ml
+    import numpy as np
+    from sklearn.ensemble import IsolationForest
+    from sklearn.preprocessing import StandardScaler
+    rng = np.random.default_rng(0)
+    # synthetic benign: small, low-port-diversity client flows with natural jitter
+    rows = []
+    for _ in range(120):
+        pkts = int(rng.integers(4, 20))
+        rows.append([pkts, int(rng.integers(1, 3)), int(rng.integers(1, 3)),
+                     int(rng.integers(0, 3)), float(rng.uniform(0.0, 0.2)),
+                     float(rng.uniform(300, 900)), int(rng.integers(1, 3)),
+                     pkts * int(rng.integers(200, 800))])
+    X = np.array(rows, float)
+    scaler = StandardScaler().fit(X)
+    model = IsolationForest(n_estimators=200, contamination=0.02, random_state=0).fit(scaler.transform(X))
+    scan = np.array([[200, 200, 1, 200, 1.0, 60.0, 1, 12000]], float)  # classic port scan
+    assert model.predict(scaler.transform(scan))[0] == -1
+    assert len(ml.FEATURES) == 8
