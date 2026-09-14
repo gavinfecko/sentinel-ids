@@ -150,3 +150,17 @@ def test_ml_anomaly_flags_scan():
     scan = np.array([[200, 200, 1, 200, 1.0, 60.0, 1, 12000]], float)  # classic port scan
     assert model.predict(scaler.transform(scan))[0] == -1
     assert len(ml.FEATURES) == 8
+
+
+def test_notify_sink_threshold_and_cooldown():
+    from ids.notify import NotifySink
+    from ids.alerts import Alert
+    sink = NotifySink(min_severity="critical", desktop=False, webhook_url="", cooldown=1000)
+    crit = Alert(sid=2000001, name="SQLi", severity="critical", category="exploit",
+                 src_ip="10.0.0.5", dst_ip="10.0.0.9", dst_port=80, mitre="T1190")
+    low = Alert(sid=1000001, name="Scan", severity="low", category="recon", src_ip="10.0.0.5")
+    sink.write(low);  assert sink.sent == 0          # below threshold -> ignored
+    sink.write(crit); assert sink.sent == 1          # critical -> sent
+    sink.write(crit); assert sink.sent == 1          # same sid within cooldown -> suppressed
+    title, body = sink.format(crit)
+    assert "CRITICAL" in title and "T1190" in body

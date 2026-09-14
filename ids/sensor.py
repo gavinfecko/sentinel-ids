@@ -13,6 +13,7 @@ from scapy.sendrecv import sniff
 from scapy.utils import rdpcap
 
 from .alerts import AlertBus, ConsoleSink, JsonlSink
+from .notify import from_config as _notify_from_config
 from .engine import Engine
 
 BANNER = r"""
@@ -72,6 +73,9 @@ def main(argv: list[str] | None = None) -> int:
     bus = AlertBus()
     bus.add_sink(ConsoleSink(min_severity=args.min_severity))
     bus.add_sink(JsonlSink(args.log))
+    _notifier = _notify_from_config(cfg)
+    if _notifier is not None:
+        bus.add_sink(_notifier)
     engine = Engine(bus, config=cfg, rules_path=rules_path)
 
     source = args.interface or args.read

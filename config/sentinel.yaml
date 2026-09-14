@@ -38,3 +38,14 @@ detectors:
 
 # Payload signature ruleset (regex rules).
 rules: rules/signatures.yaml
+
+# Real-time notifications for high-severity alerts (opt-in). ntfy = free phone push.
+notify:
+  enabled: false
+  min_severity: critical
+  cooldown: 30
+  desktop: true                 # macOS Notification Center (local)
+  ntfy_topic: ""                # e.g. "gavin-ids-7f3a" -> https://ntfy.sh/<topic> on your phone
+  ntfy_server: "https://ntfy.sh"
+  webhook_url: ""               # optional Slack/Discord webhook
+  resend: {api_key: "", from: "", to: ""}   # optional email
