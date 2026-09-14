@@ -73,7 +73,7 @@ sensor sees the attacker's packets directly. Everything runs on hardware you own
 ```bash
 make setup     # venv + deps (scapy, pyyaml, rich)
 make test      # 37 unit + integration tests
-    make cov       # coverage report (91%)
+make cov       # coverage report (91%)
 make demo      # replay a synthetic attack pcap -> alerts + HTML report (no root)
 ```
 
