@@ -49,7 +49,21 @@ def parse(pkt) -> Optional[PacketRecord]:
     """Build a PacketRecord from a scapy packet. Returns None for frames we ignore."""
     try:
         ts = float(getattr(pkt, "time", 0.0)) or time.time()
-        rec = PacketRecord(ts=ts, length=len(pkt))
+        # Measure length from the captured raw bytes. Never call len(pkt) on the
+        # whole frame: for a synthetic Ether packet with an unresolved dst MAC,
+        # scapy would build() it and issue a live ARP request (getmacbyip), which
+        # blocks on the network. Captured packets carry .original; synthetic ones
+        # fall back to the IP layer down (no Ethernet MAC resolution).
+        _raw = getattr(pkt, "original", b"") or b""
+        if _raw:
+            length = len(_raw)
+        elif IP in pkt:
+            length = len(pkt[IP]) + 14          # + approx Ethernet header
+        elif IPv6 in pkt:
+            length = len(pkt[IPv6]) + 14
+        else:
+            length = 0
+        rec = PacketRecord(ts=ts, length=length)
 
         if Ether in pkt:
             rec.src_mac = pkt[Ether].src

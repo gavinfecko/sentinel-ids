@@ -22,17 +22,17 @@ def _attack_pcap(path):
     pkts = []
     t = 1_700_000_000.0
     for i, p in enumerate(range(1, 30)):                     # port scan
-        pk = Ether()/IP(src=ATT, dst=TGT)/TCP(sport=40000+i, dport=p, flags="S")
+        pk = Ether(dst="52:54:00:12:34:56", src="52:54:00:65:43:21")/IP(src=ATT, dst=TGT)/TCP(sport=40000+i, dport=p, flags="S")
         pk.time = t + i*0.01
         pkts.append(pk)
-    xmas = Ether()/IP(src=ATT, dst=TGT)/TCP(sport=1, dport=80, flags="FPU")
+    xmas = Ether(dst="52:54:00:12:34:56", src="52:54:00:65:43:21")/IP(src=ATT, dst=TGT)/TCP(sport=1, dport=80, flags="FPU")
     xmas.time = t + 1
     pkts.append(xmas)
-    sqli = (Ether()/IP(src=ATT, dst=TGT)/TCP(sport=2, dport=80, flags="PA") /
+    sqli = (Ether(dst="52:54:00:12:34:56", src="52:54:00:65:43:21")/IP(src=ATT, dst=TGT)/TCP(sport=2, dport=80, flags="PA") /
             Raw(load=b"GET /?id=1 UNION SELECT pass FROM users HTTP/1.1\r\n\r\n"))
     sqli.time = t + 2
     pkts.append(sqli)
-    a = Ether()/ARP(op=2, psrc="10.0.0.1", hwsrc="aa:aa:aa:aa:aa:aa", pdst=TGT)
+    a = Ether(dst="52:54:00:12:34:56", src="52:54:00:65:43:21")/ARP(op=2, psrc="10.0.0.1", hwsrc="aa:aa:aa:aa:aa:aa", pdst=TGT)
     a.time = t + 3
     pkts.append(a)
     wrpcap(str(path), pkts)
@@ -43,7 +43,7 @@ def _benign_pcap(path, n=60):
     pkts = []
     t = 1_700_000_000.0
     for i in range(n):
-        pk = (Ether()/IP(src=TGT, dst="93.184.216.34") /
+        pk = (Ether(dst="52:54:00:12:34:56", src="52:54:00:65:43:21")/IP(src=TGT, dst="93.184.216.34") /
               TCP(sport=50000+i, dport=443, flags="PA")/Raw(load=b"x"*200))
         pk.time = t + i*0.5
         pkts.append(pk)
@@ -68,13 +68,13 @@ def _sample_alerts():
 
 def test_parse_udp_icmp_arp_and_nonip():
     from ids.packet import parse
-    u = parse(Ether()/IP(src=ATT, dst=TGT)/UDP(sport=1, dport=53)/Raw(load=b"q"))
+    u = parse(Ether(dst="52:54:00:12:34:56", src="52:54:00:65:43:21")/IP(src=ATT, dst=TGT)/UDP(sport=1, dport=53)/Raw(load=b"q"))
     assert u.proto == "UDP" and u.dst_port == 53
-    ic = parse(Ether()/IP(src=ATT, dst=TGT)/ICMP(type=8)/Raw(load=b"p"*10))
+    ic = parse(Ether(dst="52:54:00:12:34:56", src="52:54:00:65:43:21")/IP(src=ATT, dst=TGT)/ICMP(type=8)/Raw(load=b"p"*10))
     assert ic.proto == "ICMP"
-    ar = parse(Ether()/ARP(op=2, psrc="10.0.0.1", hwsrc="aa:aa:aa:aa:aa:aa", pdst=TGT))
+    ar = parse(Ether(dst="52:54:00:12:34:56", src="52:54:00:65:43:21")/ARP(op=2, psrc="10.0.0.1", hwsrc="aa:aa:aa:aa:aa:aa", pdst=TGT))
     assert ar.proto == "ARP" and ar.arp_psrc == "10.0.0.1"
-    assert parse(Ether()/Raw(load=b"\x00\x01")) is None or True   # non-IP must not crash
+    assert parse(Ether(dst="52:54:00:12:34:56", src="52:54:00:65:43:21")/Raw(load=b"\x00\x01")) is None or True   # non-IP must not crash
 
 
 # ---------- alerts.py ----------
@@ -119,7 +119,7 @@ def test_engine_summary_and_homenet():
     bus = AlertBus()
     eng = Engine(bus, rules_path="rules/signatures.yaml", home_net=["10.0.0.0/24"])
     for i in range(20):
-        eng.process(Ether()/IP(src=ATT, dst=TGT)/TCP(sport=40000+i, dport=i+1, flags="S"))
+        eng.process(Ether(dst="52:54:00:12:34:56", src="52:54:00:65:43:21")/IP(src=ATT, dst=TGT)/TCP(sport=40000+i, dport=i+1, flags="S"))
     s = eng.summary()
     assert s["packets"] >= 20 and "protocols" in s and "top_talkers" in s
 
@@ -178,7 +178,7 @@ def test_dashboard_sink_ringbuffer_and_layout():
                          src_ip=ATT, dst_ip=TGT, mitre="T1046"))
     assert len(sink.recent) == 3                  # ring buffer capped
     eng = Engine(AlertBus(), rules_path="rules/signatures.yaml")
-    eng.process(Ether()/IP(src=ATT, dst=TGT)/TCP(sport=1, dport=80, flags="S"))
+    eng.process(Ether(dst="52:54:00:12:34:56", src="52:54:00:65:43:21")/IP(src=ATT, dst=TGT)/TCP(sport=1, dport=80, flags="S"))
     layout = build_layout(eng, sink, "en0", time.time())
     assert layout is not None                      # renderable built without error
 

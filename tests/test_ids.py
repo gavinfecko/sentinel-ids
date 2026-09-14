@@ -13,7 +13,7 @@ from ids.packet import parse, decode_flags
 
 ATT, TGT = "192.168.0.50", "192.168.0.166"
 
-def eth(p): return Ether()/p
+def eth(p): return Ether(dst="52:54:00:12:34:56", src="52:54:00:65:43:21")/p
 
 def run(packets, rules="rules/signatures.yaml"):
     bus = AlertBus(); eng = Engine(bus, rules_path=rules)
