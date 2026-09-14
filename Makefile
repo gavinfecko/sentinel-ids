@@ -34,3 +34,6 @@ install:
 	$(VENV)/pip install -e ".[dev]"
 clean:
 	rm -f logs/*.jsonl logs/*.pcap logs/*.json; find . -name __pycache__ -type d -exec rm -rf {} +
+
+cov:
+	.venv/bin/python -m pytest tests/ --cov=ids --cov-report=term-missing
