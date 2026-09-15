@@ -5,7 +5,7 @@ Kali Linux attack lab that proves each detection end to end. Signature matching 
 stateful traffic heuristics, MITRE ATT&CK–mapped alerts, a live terminal dashboard,
 and an auto-generated HTML incident report.
 
-![CI](https://img.shields.io/badge/tests-37%20passing-brightgreen)
+![CI](https://img.shields.io/badge/tests-108%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/coverage-91%25-brightgreen)
 ![python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![detectors](https://img.shields.io/badge/detectors-8-orange)
@@ -72,7 +72,7 @@ sensor sees the attacker's packets directly. Everything runs on hardware you own
 
 ```bash
 make setup     # venv + deps (scapy, pyyaml, rich)
-make test      # 37 unit + integration tests
+make test      # 108 unit + integration tests
 make cov       # coverage report (91%)
 make demo      # replay a synthetic attack pcap -> alerts + HTML report (no root)
 ```
@@ -143,7 +143,7 @@ ids/
 config/sentinel.yaml   tunable thresholds + per-detector enable/disable
 rules/signatures.yaml  20 regex payload signatures, each ATT&CK-mapped
 scripts/          attack-pcap generator · Kali attack playbook · launchers
-tests/            20 tests: parsing, every detector, correlation, ML, notify, zero-FP guard
+tests/            108 tests: parsing, every detector, correlation, ML, notify, zero-FP guard
 ```
 
 **Engineering notes**

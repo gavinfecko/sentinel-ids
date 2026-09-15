@@ -120,11 +120,14 @@ class StealthScanDetector(Detector):
     mitre = "T1046"
     cooldown = 10.0
 
+    # NOTE: FIN+ACK ("FA") is deliberately NOT listed. Although nmap's Maimon scan
+    # uses FIN+ACK, so does every normal TCP connection teardown, so matching it
+    # here produced a false positive on essentially all real traffic. The combos
+    # below never occur in a legitimate TCP session.
     VARIANTS = {
         "": "NULL scan (no flags set)",
         "F": "FIN scan",
         "FPU": "XMAS scan (FIN+PSH+URG)",
-        "FA": "Maimon scan (FIN+ACK)",
         "SF": "SYN+FIN (illegal combination)",
         "SR": "SYN+RST (illegal combination)",
         "FPUS": "full XMAS tree",

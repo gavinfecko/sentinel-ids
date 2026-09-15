@@ -15,9 +15,9 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -e ".[dev,ml]"
       - name: Validate signature rules
-        run: python -c "import yaml,re; [re.compile(r['regex']) for r in yaml.safe_load(open('rules/signatures.yaml'))['signatures']]; print('rules OK')"
+        run: python -c "import yaml,re; [re.compile(r['regex'].encode(), re.IGNORECASE) for r in yaml.safe_load(open('rules/signatures.yaml'))['signatures']]; print('rules OK')"
       - name: Run tests
         run: pytest -q
       - name: Detection self-check (attack sim replay)

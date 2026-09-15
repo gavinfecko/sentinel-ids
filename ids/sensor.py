@@ -79,13 +79,14 @@ def main(argv: list[str] | None = None) -> int:
     engine = Engine(bus, config=cfg, rules_path=rules_path)
 
     source = args.interface or args.read
-    print(f"  source      : {source}")
-    print(f"  detectors   : {len(engine.detectors)} "
-          f"({engine.signature_count} payload signatures)")
-    print(f"  bpf filter  : {args.filter or '(none)'}")
-    print(f"  alert log   : {args.log}")
-    print(f"  console min : {args.min_severity}")
-    print("-" * 72)
+    if not args.quiet:
+        print(f"  source      : {source}")
+        print(f"  detectors   : {len(engine.detectors)} "
+              f"({engine.signature_count} payload signatures)")
+        print(f"  bpf filter  : {args.filter or '(none)'}")
+        print(f"  alert log   : {args.log}")
+        print(f"  console min : {args.min_severity}")
+        print("-" * 72)
 
     stop = {"flag": False}
 
