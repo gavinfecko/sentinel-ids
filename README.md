@@ -5,7 +5,7 @@ Kali Linux attack lab that proves each detection end to end. Signature matching 
 stateful traffic heuristics, MITRE ATT&CK–mapped alerts, a live terminal dashboard,
 and an auto-generated HTML incident report.
 
-![CI](https://img.shields.io/badge/tests-108%20passing-brightgreen)
+![CI](https://img.shields.io/badge/tests-118%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/coverage-91%25-brightgreen)
 ![python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![detectors](https://img.shields.io/badge/detectors-8-orange)
@@ -72,7 +72,7 @@ sensor sees the attacker's packets directly. Everything runs on hardware you own
 
 ```bash
 make setup     # venv + deps (scapy, pyyaml, rich)
-make test      # 108 unit + integration tests
+make test      # 118 unit + integration tests
 make cov       # coverage report (91%)
 make demo      # replay a synthetic attack pcap -> alerts + HTML report (no root)
 ```
@@ -125,6 +125,23 @@ Two live engagements were run and captured (see `docs/` and `logs/`):
    exploitation (port scan, NSE probes, Metasploit-payload signature, cleartext credentials).
    Report: `docs/PENTEST_REPORT.html`; evidence: `docs/pentest_evidence.txt`;
    attack script: `scripts/pentest_metasploitable.sh`.
+
+## Limitations & future work
+
+Honest scope, and the natural next steps:
+
+- **No TCP stream reassembly.** Signatures match per packet, and only the first
+  2048 bytes of L4 payload are inspected (`MAX_PAYLOAD_CAPTURE`). An attacker can
+  evade a signature by splitting the payload across segments or padding past the
+  cap. Stream-reassembling engines (Suricata, Zeek) solve this; adding a reassembly
+  layer is the highest-value next step.
+- **No TLS inspection.** Encrypted payloads are opaque, so payload signatures only
+  apply to cleartext. Metadata detection (JA3/JA4, SNI, cert anomalies) would extend
+  coverage to encrypted traffic.
+- **Single-sensor.** One host sniffing one segment. A distributed deployment would
+  tap multiple segments and centralise alerts.
+- **Line-rate.** The Python/scapy path suits a lab, not a 10GbE uplink; production
+  volume wants a kernel-capture fast path (AF_PACKET/PF_RING) or a purpose-built engine.
 
 ## Architecture
 

@@ -15,6 +15,7 @@ from .detectors import (
     StealthScanDetector, SynFloodDetector,
 )
 from .packet import PacketRecord, parse
+from .netutil import parse_nets, direction
 
 GC_INTERVAL = 30.0
 
@@ -25,7 +26,10 @@ class Engine:
                  home_net: Optional[list[str]] = None) -> None:
         self.bus = bus
         self.config = config or {}
-        self.home_net = home_net or []
+        self.home_net = home_net or (self.config.get('home_net') if self.config else None) or []
+        self._home_nets = parse_nets(self.home_net)
+        self._first_ts = None
+        self._last_ts = None
         self.detectors: list[Detector] = []
         self.stats = Counter()
         self.proto_counts = Counter()
@@ -69,6 +73,20 @@ class Engine:
         self.proto_counts[rec.proto] += 1
         if rec.src_ip:
             self.talkers[rec.src_ip] += 1
+        if self._first_ts is None:
+            self._first_ts = rec.ts
+        self._last_ts = rec.ts
+
+        # Direction relative to home_net. If home_net is set, external<->external
+        # traffic (neither endpoint ours) is noise we skip; everything else is
+        # tagged so alerts carry inbound/outbound/internal context.
+        dir_ = None
+        if self._home_nets:
+            dir_ = direction(rec.src_ip, rec.dst_ip, self._home_nets)
+            # ARP is always link-local; never drop it or we'd disable spoof detection.
+            if dir_ == "external" and rec.proto != "ARP":
+                self.stats["skipped_external"] += 1
+                return []
 
         fired: list[Alert] = []
         for det in self.detectors:
@@ -76,6 +94,8 @@ class Engine:
                 continue
             try:
                 for alert in det.inspect(rec):
+                    if dir_:
+                        alert.evidence["direction"] = dir_
                     fired.append(alert)
                     self.bus.emit(alert)
             except Exception as exc:
@@ -93,11 +113,18 @@ class Engine:
 
     def summary(self) -> dict[str, Any]:
         elapsed = max(time.time() - self.started, 0.001)
+        # Prefer the capture's own timespan so pcap replay reports the true capture
+        # rate, not how fast we replayed it. Fall back to wall clock for live/short runs.
+        span = (self._last_ts - self._first_ts) if (self._first_ts is not None
+                and self._last_ts and self._last_ts > self._first_ts) else 0.0
+        rate_base = span if span > 0 else elapsed
         return {
             "elapsed_seconds": round(elapsed, 1),
+            "capture_span_seconds": round(span, 1),
             "packets": self.stats["packets"],
             "bytes": self.stats["bytes"],
-            "packets_per_sec": round(self.stats["packets"] / elapsed, 1),
+            "packets_per_sec": round(self.stats["packets"] / max(rate_base, 0.001), 1),
+            "skipped_external": self.stats["skipped_external"],
             "alerts": self.bus.count,
             "alerts_by_severity": dict(self.bus.by_severity),
             "alerts_by_sid": dict(self.bus.by_sid),

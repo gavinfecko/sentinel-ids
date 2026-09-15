@@ -1,9 +1,12 @@
 # sentinel-ids configuration. Every detector can be tuned or disabled here.
 # Pass with:  --config config/sentinel.yaml
 
-# Networks you consider "home" — used for context in reports (informational).
-home_net:
-  - 192.168.0.0/24
+# Networks you consider "home". When set, external<->external traffic (neither
+# endpoint yours) is skipped as noise, and every alert is tagged inbound/outbound/
+# internal. Empty (default) monitors ALL traffic — safest, no silent drops.
+# Set this to YOUR LAN subnet to enable direction filtering + noise reduction,
+# e.g.  home_net: ["192.168.1.0/24"].  A wrong subnet here would drop everything.
+home_net: []
 
 detectors:
   port_scan:
@@ -26,6 +29,12 @@ detectors:
 
   arp_spoof:
     enabled: true      # IP-to-MAC binding changes
+    # Trusted IP->MAC pairs (e.g. your gateway). Legit rebinding to these is
+    # silent; an allowlisted IP seen with a DIFFERENT MAC is flagged as
+    # impersonation (high confidence). Find your gateway's MAC with:
+    #   arp -an | grep <gateway-ip>
+    # allowlist:
+    #   "192.168.0.1": "aa:bb:cc:dd:ee:ff"
 
   brute_force:
     enabled: true

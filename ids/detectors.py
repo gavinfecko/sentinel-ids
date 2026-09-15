@@ -229,10 +229,15 @@ class ArpSpoofDetector(Detector):
     mitre = "T1557.002"
     cooldown = 30.0
 
-    def __init__(self, **opts: Any) -> None:
+    def __init__(self, allowlist: Optional[dict] = None, **opts: Any) -> None:
         super().__init__(**opts)
         self.bindings: dict[str, str] = {}
         self.flapping: dict[str, int] = defaultdict(int)
+        # Trusted ip -> mac pairs (e.g. the gateway). Seeds known-good bindings so
+        # legitimate rebinding to the trusted MAC is silent, and turns the tables:
+        # an allowlisted IP seen with a DIFFERENT MAC is a high-confidence spoof.
+        self.allowlist: dict[str, str] = {ip: m.lower() for ip, m in (allowlist or {}).items()}
+        self.bindings.update(self.allowlist)
 
     def inspect(self, rec: PacketRecord):
         if rec.proto != "ARP" or not rec.arp_psrc or not rec.arp_hwsrc:
@@ -240,17 +245,23 @@ class ArpSpoofDetector(Detector):
         ip, mac = rec.arp_psrc, rec.arp_hwsrc.lower()
         if mac in ("00:00:00:00:00:00", "ff:ff:ff:ff:ff:ff"):
             return ()
+        trusted = self.allowlist.get(ip)
+        if trusted is not None and mac == trusted:
+            self.bindings[ip] = mac          # legitimate binding for a known device
+            return ()
         known = self.bindings.get(ip)
         self.bindings[ip] = mac
         if known and known != mac:
             self.flapping[ip] += 1
+            impersonation = trusted is not None      # allowlisted IP, wrong MAC
             if self._ready(ip, rec.ts):
+                detail = f"{ip} moved from {known} to {mac} (change #{self.flapping[ip]})"
+                if impersonation:
+                    detail = f"trusted host {ip} impersonated: expected {trusted}, saw {mac}"
                 return (self.alert(
-                    rec,
-                    f"{ip} moved from {known} to {mac} "
-                    f"(change #{self.flapping[ip]})",
+                    rec, detail,
                     ip=ip, previous_mac=known, new_mac=mac,
-                    changes=self.flapping[ip],
+                    changes=self.flapping[ip], impersonation=impersonation,
                 ),)
         return ()
 

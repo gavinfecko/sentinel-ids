@@ -9,6 +9,12 @@ from scapy.layers.inet import IP, TCP, UDP, ICMP
 from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import ARP, Ether
 
+# Bytes of L4 payload kept per packet for signature matching. This is a
+# per-packet cap: sentinel-ids does not reassemble TCP streams, so a payload
+# split across segments or padded past this size can evade signatures — a
+# known limitation vs stream-reassembling engines (Suricata/Zeek). See README.
+MAX_PAYLOAD_CAPTURE = 2048
+
 # TCP flag bit -> letter, in the order tcpdump prints them
 _TCP_FLAGS = [
     (0x01, "F"), (0x02, "S"), (0x04, "R"), (0x08, "P"),
@@ -98,19 +104,19 @@ def parse(pkt) -> Optional[PacketRecord]:
             rec.src_port = int(tcp.sport)
             rec.dst_port = int(tcp.dport)
             rec.tcp_flags = decode_flags(int(tcp.flags))
-            rec.payload = bytes(tcp.payload)[:2048]
+            rec.payload = bytes(tcp.payload)[:MAX_PAYLOAD_CAPTURE]
         elif UDP in pkt:
             udp = pkt[UDP]
             rec.proto = "UDP"
             rec.src_port = int(udp.sport)
             rec.dst_port = int(udp.dport)
-            rec.payload = bytes(udp.payload)[:2048]
+            rec.payload = bytes(udp.payload)[:MAX_PAYLOAD_CAPTURE]
         elif ICMP in pkt:
             icmp = pkt[ICMP]
             rec.proto = "ICMP"
             rec.icmp_type = int(icmp.type)
             rec.icmp_code = int(icmp.code)
-            rec.payload = bytes(icmp.payload)[:2048]
+            rec.payload = bytes(icmp.payload)[:MAX_PAYLOAD_CAPTURE]
         else:
             rec.proto = "IP"
         return rec
