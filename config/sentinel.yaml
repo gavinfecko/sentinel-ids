@@ -6,7 +6,8 @@
 # internal. Empty (default) monitors ALL traffic — safest, no silent drops.
 # Set this to YOUR LAN subnet to enable direction filtering + noise reduction,
 # e.g.  home_net: ["192.168.1.0/24"].  A wrong subnet here would drop everything.
-home_net: []
+home_net: []                 # empty = monitor all traffic (roaming-safe)
+# home_net: ["192.168.1.0/24"]      # <- set to your LAN subnet to scope detection
 
 detectors:
   port_scan:
@@ -33,8 +34,8 @@ detectors:
     # silent; an allowlisted IP seen with a DIFFERENT MAC is flagged as
     # impersonation (high confidence). Find your gateway's MAC with:
     #   arp -an | grep <gateway-ip>
-    # allowlist:
-    #   "192.168.0.1": "aa:bb:cc:dd:ee:ff"
+    allowlist:
+      "192.168.1.1": "aa:bb:cc:dd:ee:ff"    # example: your gateway
 
   brute_force:
     enabled: true

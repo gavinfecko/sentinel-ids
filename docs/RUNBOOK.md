@@ -4,7 +4,7 @@
 ```bash
 cd ~/ids-lab
 make setup      # venv + scapy/pyyaml/rich
-make test       # 13 passing
+make test       # 118 passing
 make demo       # replay attack sim -> logs/report.html  (no root, no VM)
 ```
 
