@@ -160,7 +160,7 @@ ids/
 config/sentinel.yaml   tunable thresholds + per-detector enable/disable
 rules/signatures.yaml  20 regex payload signatures, each ATT&CK-mapped
 scripts/          attack-pcap generator · Kali attack playbook · launchers
-tests/            108 tests: parsing, every detector, correlation, ML, notify, zero-FP guard
+tests/            118 tests: parsing, every detector, correlation, ML, notify, zero-FP guard
 ```
 
 **Engineering notes**
