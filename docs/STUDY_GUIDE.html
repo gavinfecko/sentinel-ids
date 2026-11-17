@@ -335,7 +335,7 @@ html{scroll-behavior:smooth}
       <div class="a"><p>vsftpd 2.3.4 shipped with a backdoor (CVE-2011-2523). If the FTP username ends in <span class="k">:)</span>, the daemon opens a root shell listening on port 6200. So you connect to FTP, send a username with the smiley, then connect to 6200 and you're root. No password, no memory corruption, just a malicious build.</p></div></details>
 
       <details class="qa"><summary><span class="q">Q</span> How did you avoid false positives?</summary>
-      <div class="a"><p>Thresholds tuned to real behavior, cooldowns to prevent alert storms, and a dedicated zero-false-positive test: normal repeated HTTPS traffic to one host must not trip the scan detectors. It's one of 20 tests in the suite.</p></div></details>
+      <div class="a"><p>Thresholds tuned to real behavior, cooldowns to prevent alert storms, and a dedicated zero-false-positive test: normal repeated HTTPS traffic to one host must not trip the scan detectors. It's one of 118 tests in the suite.</p></div></details>
 
       <details class="qa"><summary><span class="q">Q</span> What's MITRE ATT&amp;CK and why tag alerts with it?</summary>
       <div class="a"><p>It's a knowledge base of real adversary tactics and techniques. Tagging each alert with its technique ID (a port scan is T1046, Network Service Discovery) lets defenders speak a common language, map coverage, and hand analysts context. It's expected vocabulary in a SOC.</p></div></details>
@@ -356,7 +356,7 @@ html{scroll-behavior:smooth}
       <p>The offline demo needs no VM and no root. It synthesizes one clean example of every attack, runs the IDS, and writes an HTML report.</p>
       <pre>cd ~/ids-lab
 make setup      # venv + scapy, pyyaml, rich
-make test       # 20 tests
+make test       # 118 tests
 make demo       # replay attacks -> logs/report.html
 
 # correlate an alert log into incidents
@@ -369,7 +369,7 @@ sentinel-ml score -r logs/wireshark_capture.pcapng</pre>
     </section>
 
     <div class="foot">
-      <p>sentinel-ids &middot; built and validated in a controlled home lab for education. Repository: <span class="mono">github.com/gavinfecko/sentinel-ids</span> (private). This guide reflects the project as of the latest build: 8 detectors, 20 signatures, 20 tests, ML anomaly detection, incident correlation, and multi-channel notifications.</p>
+      <p>sentinel-ids &middot; built and validated in a controlled home lab for education. Repository: <span class="mono">github.com/gavinfecko/sentinel-ids</span> (public). This guide reflects the project as of the latest build: 8 detectors, 20 signatures, 118 tests (91% coverage), ML anomaly detection, incident correlation, and multi-channel notifications.</p>
     </div>
   </main>
 </div>
