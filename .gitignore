@@ -12,3 +12,6 @@ logs/*.html
 build/
 models/
 *.joblib
+.coverage
+.coverage.*
+htmlcov/
